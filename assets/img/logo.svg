@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" aria-label="Yoru language mark">
+  <defs>
+    <radialGradient id="moon" cx="0.35" cy="0.35" r="0.7">
+      <stop offset="0%"  stop-color="#fbbf24"/>
+      <stop offset="60%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#67e8f9"/>
+    </linearGradient>
+  </defs>
+  <circle cx="120" cy="120" r="100" fill="url(#moon)" opacity="0.18"/>
+  <circle cx="120" cy="120" r="68"  fill="url(#moon)" opacity="0.55"/>
+  <text x="120" y="158"
+        text-anchor="middle"
+        font-family="'Hiragino Mincho ProN','Yu Mincho',serif"
+        font-size="120"
+        font-weight="700"
+        fill="url(#ink)">夜</text>
+</svg>

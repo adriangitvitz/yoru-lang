@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yoru Docs: Language Reference &amp; Tour</title>
+  <meta name="description"
+        content="The Yoru programming language documentation. Install, tour the syntax, learn effects, actors, pipelines, agents, MCP servers, and HTTP services.">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <meta name="theme-color" content="#0b0d14">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container-wide container topbar-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">夜</span>
+      <span>Yoru</span>
+      <span class="brand-tag">v0.1 · Phase 0</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="../index.html">Home</a>
+      <a href="index.html" class="is-active">Docs</a>
+      <a href="index.html#spec">Spec</a>
+      <a href="https://github.com/adriangitvitz/yoru" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg class="icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="container container-wide docs-shell">
+
+  <!-- ==================== sidebar nav ==================== -->
+  <aside class="toc-sidebar" aria-label="Documentation sections">
+    <h4>Getting started</h4>
+    <ul>
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#getting-started">Quick start</a></li>
+      <li><a href="#install">Installation</a></li>
+      <li><a href="#hello">Hello, Yoru</a></li>
+      <li><a href="#cli">The yoru CLI</a></li>
+    </ul>
+
+    <h4>Language tour</h4>
+    <ul>
+      <li><a href="#language-tour">Bindings &amp; functions</a></li>
+      <li><a href="#types">Primitive types</a></li>
+      <li><a href="#objects">Objects &amp; protocols</a></li>
+      <li><a href="#enums">Enums &amp; matching</a></li>
+      <li><a href="#errors">Errors &amp; Result</a></li>
+      <li><a href="#capabilities">Reference capabilities</a></li>
+    </ul>
+
+    <h4>Effects</h4>
+    <ul>
+      <li><a href="#effects">Why effects?</a></li>
+      <li><a href="#effect-handling">Declaring &amp; handling</a></li>
+      <li><a href="#effect-builtin">Built-in effects</a></li>
+    </ul>
+
+    <h4>Concurrency</h4>
+    <ul>
+      <li><a href="#concurrency">Actors</a></li>
+      <li><a href="#spawn-send">Spawn, send, ask</a></li>
+      <li><a href="#supervision">Supervision</a></li>
+    </ul>
+
+    <h4>Pipelines</h4>
+    <ul>
+      <li><a href="#pipelines">Building a pipeline</a></li>
+      <li><a href="#partitioning">Partitioning &amp; back-pressure</a></li>
+    </ul>
+
+    <h4>Agents &amp; MCP</h4>
+    <ul>
+      <li><a href="#agents">Tools</a></li>
+      <li><a href="#agent-decl">Agents</a></li>
+      <li><a href="#mcp">MCP servers</a></li>
+    </ul>
+
+    <h4>HTTP services</h4>
+    <ul>
+      <li><a href="#services">REST handlers</a></li>
+      <li><a href="#middleware">Middleware</a></li>
+    </ul>
+
+    <h4>Reference</h4>
+    <ul>
+      <li><a href="#spec">Specification</a></li>
+      <li><a href="#keywords">Keyword reference</a></li>
+      <li><a href="#operators">Operator reference</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#design-decisions">Design decisions</a></li>
+    </ul>
+  </aside>
+
+  <!-- ==================== content ==================== -->
+  <main class="docs-content">
+
+    <h1>The Yoru Documentation</h1>
+    <p class="lead">
+      A statically typed, multi-paradigm language built for the workloads
+      that broke the previous generation: high-throughput services,
+      heterogeneous ETL pipelines, supervised actor systems, and autonomous
+      LLM agents talking to tools over MCP. Read this page top to bottom and
+      you'll have the working surface of the language.
+    </p>
+
+    <!-- =================================================================== -->
+    <h2 id="introduction">Introduction</h2>
+    <p>
+      <strong>Yoru</strong> (夜, "night") treats tools, agents, MCP servers,
+      supervised actors, ETL pipelines, and HTTP services as
+      <em>first-class language constructs</em> rather than libraries. The
+      compiler enforces effect tracking, capability scoping, and reference
+      uniqueness at compile time: the same invariants every production team
+      ends up policing by hand.
+    </p>
+    <p>
+      Yoru is in <strong>Phase 0</strong>: a tree-walking interpreter hosted
+      on a Go 1.22 runtime. The language surface is stable; the bytecode VM
+      and LLVM backend are scheduled for Phase 1 and Phase 2.
+    </p>
+
+    <!-- =================================================================== -->
+    <h2 id="getting-started">Quick start</h2>
+    <p>Three commands take you from clone to a running program:</p>
+<pre><code><span class="tok-co"># 1. clone &amp; build</span>
+git clone https://github.com/adriangitvitz/yoru
+cd yoru &amp;&amp; go build ./cmd/yoru
+
+<span class="tok-co"># 2. write a file</span>
+echo 'fn main() { println("hello, yoru") }' &gt; hello.yr
+
+<span class="tok-co"># 3. run it</span>
+./yoru run hello.yr
+<span class="tok-co">#=> hello, yoru</span></code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="install">Installation</h2>
+    <p>Yoru ships as a single Go binary. Build from source:</p>
+<pre><code>git clone https://github.com/adriangitvitz/yoru
+cd yoru
+go build ./cmd/yoru
+mv ./yoru /usr/local/bin/
+yoru version
+<span class="tok-co">#=> yoru 0.1.0 (Phase 0)</span></code></pre>
+
+    <h3>Optional environment variables</h3>
+    <p>
+      Only needed when running agents against a real LLM. Without them,
+      agents return <code>Result.Err{kind: "llm_not_configured"}</code>;
+      everything else still works.
+    </p>
+    <table>
+      <thead><tr><th>Variable</th><th>When to set it</th></tr></thead>
+      <tbody>
+        <tr><td><code>OPENROUTER_API_KEY</code></td><td>Multi-provider gateway. Takes priority when set.</td></tr>
+        <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Use Anthropic directly. Consulted only if the above is unset.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- =================================================================== -->
+    <h2 id="hello">Hello, Yoru</h2>
+<pre><code><span class="tok-kw">fn</span> <span class="tok-fn">greet</span>(name: <span class="tok-type">String</span>) -&gt; <span class="tok-type">String</span> {
+  <span class="tok-str">"hello, "</span> + name
+}
+
+<span class="tok-kw">fn</span> <span class="tok-fn">main</span>() {
+  <span class="tok-kw">let</span> names = [<span class="tok-str">"yoru"</span>, <span class="tok-str">"claude"</span>, <span class="tok-str">"world"</span>]
+  <span class="tok-kw">for</span> n <span class="tok-kw">in</span> names {
+    <span class="tok-fn">println</span>(<span class="tok-fn">greet</span>(n))
+  }
+}</code></pre>
+    <ul>
+      <li>Functions use <code>fn</code>. The last expression of a block is its value, so no explicit <code>return</code> is needed.</li>
+      <li>Bindings are immutable by default (<code>let</code>); use <code>mut</code> to reassign.</li>
+      <li>Lists use <code>[…]</code>; iteration uses <code>for … in …</code>.</li>
+    </ul>
+
+    <!-- =================================================================== -->
+    <h2 id="cli">The <code>yoru</code> CLI</h2>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>yoru run file.yr</code></td><td>Lex, parse, type-check, evaluate.</td></tr>
+        <tr><td><code>yoru check file.yr</code></td><td>Type-check only (fast feedback in editors).</td></tr>
+        <tr><td><code>yoru fmt file.yr</code></td><td>Canonical formatter.</td></tr>
+        <tr><td><code>yoru repl</code></td><td>Interactive REPL.</td></tr>
+        <tr><td><code>yoru run ./app/</code></td><td>Multi-file project; auto-starts any declared <code>service</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- =================================================================== -->
+    <h2 id="language-tour">Bindings, functions, control flow</h2>
+<pre><code><span class="tok-co">// immutable by default</span>
+<span class="tok-kw">let</span> answer = <span class="tok-num">42</span>
+
+<span class="tok-co">// mutable</span>
+<span class="tok-kw">mut</span> counter = <span class="tok-num">0</span>
+counter += <span class="tok-num">1</span>
+
+<span class="tok-co">// functions are expressions; lambdas use =&gt;</span>
+<span class="tok-kw">let</span> double = (x) =&gt; x * <span class="tok-num">2</span>
+
+<span class="tok-co">// while &amp; for</span>
+<span class="tok-kw">while</span> counter &lt; <span class="tok-num">5</span> { counter += <span class="tok-num">1</span> }
+<span class="tok-kw">for</span> i <span class="tok-kw">in</span> [<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>] { <span class="tok-fn">println</span>(i) }</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="types">Primitive types &amp; collections</h2>
+    <table>
+      <thead><tr><th>Type</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td><code>Int</code> / <code>Float</code></td><td><code>1</code>, <code>-7</code>, <code>3.14</code></td></tr>
+        <tr><td><code>String</code></td><td><code>"hello"</code> (UTF-8)</td></tr>
+        <tr><td><code>Bool</code></td><td><code>true</code>, <code>false</code></td></tr>
+        <tr><td><code>Bytes</code></td><td>raw byte buffer</td></tr>
+        <tr><td><code>List[T]</code></td><td><code>[1, 2, 3]</code></td></tr>
+        <tr><td><code>Map[K, V]</code></td><td><code>{"a": 1, "b": 2}</code></td></tr>
+        <tr><td><code>Option[T]</code> / <code>Result[T, E]</code></td><td>core types, not stdlib</td></tr>
+      </tbody>
+    </table>
+
+    <!-- =================================================================== -->
+    <h2 id="objects">Objects &amp; protocols</h2>
+    <p>Classical OOP conflates identity, state, and behavior. Yoru splits them:</p>
+<pre><code><span class="tok-co">// an Object is a named, capability-qualified record</span>
+<span class="tok-kw">object</span> <span class="tok-type">User</span> {
+  id:    <span class="tok-type">String</span>,
+  email: <span class="tok-type">String</span>,
+  role:  <span class="tok-type">Role</span>,
+}
+
+<span class="tok-co">// a Protocol describes behaviour (effect-aware)</span>
+<span class="tok-kw">protocol</span> <span class="tok-type">Serializable</span> {
+  <span class="tok-kw">fn</span> <span class="tok-fn">serialize</span>(self: <span class="tok-kw">ref</span>) -&gt; <span class="tok-type">Bytes</span> <span class="tok-kw">effect</span> [<span class="tok-type">IO</span>]
+  <span class="tok-kw">fn</span> <span class="tok-fn">deserialize</span>(data: <span class="tok-type">Bytes</span>) -&gt; <span class="tok-type">Result</span>[<span class="tok-type">Self</span>, <span class="tok-type">ParseError</span>]
+}
+
+<span class="tok-co">// impl wires them together, separate from declaration</span>
+<span class="tok-kw">impl</span> <span class="tok-type">User</span> : <span class="tok-type">Serializable</span> {
+  <span class="tok-kw">fn</span> <span class="tok-fn">serialize</span>(self: <span class="tok-kw">ref</span>) -&gt; <span class="tok-type">Bytes</span> <span class="tok-kw">effect</span> [<span class="tok-type">IO</span>] {
+    <span class="tok-type">JSON</span>.<span class="tok-fn">encode</span>(self)
+  }
+}</code></pre>
+    <p>
+      There is no inheritance. The <code>delegate</code> keyword embeds one
+      object inside another and auto-forwards protocol implementations:
+    </p>
+<pre><code><span class="tok-kw">object</span> <span class="tok-type">AdminUser</span> {
+  <span class="tok-kw">delegate</span> base: <span class="tok-type">User</span>,        <span class="tok-co">// auto-implements all of User's protocols</span>
+  permissions: [<span class="tok-type">Permission</span>],
+}</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="enums">Enums &amp; pattern matching</h2>
+<pre><code><span class="tok-kw">enum</span> <span class="tok-type">PipelineEvent</span> {
+  <span class="tok-type">Record</span>(data: <span class="tok-kw">val</span> <span class="tok-type">Record</span>)
+  <span class="tok-type">Error</span>(cause: <span class="tok-type">PipelineError</span>, record: <span class="tok-type">Option</span>[<span class="tok-kw">val</span> <span class="tok-type">Record</span>])
+  <span class="tok-type">Checkpoint</span>(offset: <span class="tok-type">Int</span>)
+  <span class="tok-type">EndOfStream</span>
+}
+
+<span class="tok-kw">fn</span> <span class="tok-fn">handle_event</span>(ev: <span class="tok-type">PipelineEvent</span>) <span class="tok-kw">effect</span> [<span class="tok-type">Log</span>, <span class="tok-type">DB</span>] {
+  <span class="tok-kw">match</span> ev {
+    <span class="tok-type">Record</span>(data)                =&gt; <span class="tok-type">DB</span>.<span class="tok-fn">upsert</span>(data)
+    <span class="tok-type">Error</span>(cause, <span class="tok-type">Some</span>(rec))    =&gt; <span class="tok-type">DB</span>.<span class="tok-fn">insert_dead_letter</span>(rec, cause)
+    <span class="tok-type">Error</span>(cause, <span class="tok-type">None</span>)         =&gt; <span class="tok-type">Log</span>.<span class="tok-fn">error</span>(<span class="tok-str">"unattributed"</span>, { cause })
+    <span class="tok-type">Checkpoint</span>(offset)          =&gt; <span class="tok-type">DB</span>.<span class="tok-fn">save_checkpoint</span>(offset)
+    <span class="tok-type">EndOfStream</span>                  =&gt; <span class="tok-type">Log</span>.<span class="tok-fn">info</span>(<span class="tok-str">"complete"</span>, {})
+  }
+}</code></pre>
+    <p>Match is exhaustive: the compiler rejects a missing arm.</p>
+
+    <!-- =================================================================== -->
+    <h2 id="errors">Errors &amp; <code>Result</code></h2>
+    <p>
+      <code>Result[T, E]</code> is core, not stdlib. The <code>?</code>
+      operator unwraps <code>Ok</code> or early-returns <code>Err</code>:
+    </p>
+<pre><code><span class="tok-kw">fn</span> <span class="tok-fn">process</span>(record: <span class="tok-kw">val</span> <span class="tok-type">Record</span>) -&gt; <span class="tok-type">Result</span>[<span class="tok-type">Row</span>, <span class="tok-type">ProcessError</span>] <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>, <span class="tok-type">HTTP</span>] {
+  <span class="tok-kw">let</span> validated = <span class="tok-type">Validator</span>.<span class="tok-fn">check</span>(record)?     <span class="tok-co">// chains</span>
+  <span class="tok-kw">let</span> enriched  = <span class="tok-type">Enricher</span>.<span class="tok-fn">enrich</span>(validated)?
+  <span class="tok-type">Ok</span>(<span class="tok-type">Mapper</span>.<span class="tok-fn">to_row</span>(enriched))
+}</code></pre>
+    <p>The <code>??</code> operator provides a default or an alternative <code>Err</code>:</p>
+<pre><code><span class="tok-kw">let</span> user = <span class="tok-type">DB</span>.<span class="tok-fn">find</span>(<span class="tok-type">User</span>, id) ?? <span class="tok-type">Err</span>(<span class="tok-type">NotFound</span>)</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="capabilities">Reference capabilities</h2>
+    <p>
+      Borrowed from Pony. Capabilities are annotations the compiler checks
+      statically; they prevent data races without a borrow checker.
+    </p>
+    <table>
+      <thead><tr><th>Capability</th><th>Name</th><th>Semantics</th></tr></thead>
+      <tbody>
+        <tr><td><code>iso</code></td><td>Isolated</td><td>Unique ownership; may cross actor boundaries.</td></tr>
+        <tr><td><code>trn</code></td><td>Transition</td><td>Mutable globally unique; converts to <code>val</code> or <code>ref</code>.</td></tr>
+        <tr><td><code>ref</code></td><td>Mutable</td><td>Mutable alias; never shared between actors.</td></tr>
+        <tr><td><code>val</code></td><td>Immutable</td><td>Deeply immutable; freely shareable.</td></tr>
+        <tr><td><code>box</code></td><td>Read-only</td><td>Read-only alias from <code>ref</code> or <code>val</code>.</td></tr>
+        <tr><td><code>tag</code></td><td>Identity</td><td>No read/write; actor identity / capability checks.</td></tr>
+      </tbody>
+    </table>
+<pre><code><span class="tok-co">// iso can be sent across actors; compiler rejects further use of msg</span>
+<span class="tok-kw">let</span> msg: <span class="tok-kw">iso</span> <span class="tok-type">Message</span> = <span class="tok-type">Message</span>.<span class="tok-fn">new</span>(payload: <span class="tok-str">"hello"</span>)
+actor_ref &lt;- msg
+
+<span class="tok-co">// val is deeply immutable, safe to broadcast</span>
+<span class="tok-kw">let</span> config: <span class="tok-kw">val</span> <span class="tok-type">Config</span> = <span class="tok-type">Config</span>.<span class="tok-fn">load</span>(<span class="tok-str">"config.toml"</span>)
+<span class="tok-kw">spawn</span> <span class="tok-fn">worker_a</span>(config)
+<span class="tok-kw">spawn</span> <span class="tok-fn">worker_b</span>(config)</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="effects">Why algebraic effects?</h2>
+    <p>
+      Exceptions only propagate <em>up</em> the call stack. Algebraic effects
+      can suspend computation and let a <em>handler</em> decide what to do
+      next: resume, abort, retry, run multiple times. Strictly more powerful
+      than async/await, checked exceptions, or monadic error handling, and
+      they don't <em>colour</em> the call graph.
+    </p>
+    <p>Every function declares which effects it uses:</p>
+<pre><code><span class="tok-kw">fn</span> <span class="tok-fn">enrich_record</span>(r: <span class="tok-kw">ref</span> <span class="tok-type">Record</span>) -&gt; <span class="tok-type">Result</span>[<span class="tok-type">Row</span>, <span class="tok-type">Error</span>]
+    <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>, <span class="tok-type">HTTP</span>, <span class="tok-type">LLM</span>]
+<span class="tok-co">// the compiler enforces that DB, HTTP, LLM are all handled before main()</span></code></pre>
+
+    <h3 id="effect-builtin">Built-in effects</h3>
+    <table>
+      <thead><tr><th>Effect</th><th>Meaning</th><th>Provided by</th></tr></thead>
+      <tbody>
+        <tr><td><code>IO</code></td>     <td>Arbitrary I/O</td>             <td>Any unstructured handler</td></tr>
+        <tr><td><code>HTTP</code></td>   <td>Outbound HTTP / gRPC</td>      <td>REST client, gRPC stub</td></tr>
+        <tr><td><code>DB</code></td>     <td>Database read/write</td>       <td>Connection pool, transaction</td></tr>
+        <tr><td><code>LLM</code></td>    <td>Language-model inference</td>  <td>Provider config, token budget</td></tr>
+        <tr><td><code>Agent</code></td>  <td>Multi-step LLM loop</td>       <td>Agent runtime, tool registry</td></tr>
+        <tr><td><code>Stream</code></td> <td>Unbounded data stream</td>     <td>Pipeline scheduler, back-pressure</td></tr>
+        <tr><td><code>Spawn</code></td>  <td>Spawning actors/tasks</td>     <td>Scheduler, resource limits</td></tr>
+        <tr><td><code>Log</code></td>    <td>Structured logging</td>        <td>Logger sink</td></tr>
+        <tr><td><code>Clock</code></td>  <td>Reading time</td>              <td>System clock or test clock</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="effect-handling">Handling effects</h3>
+    <p>
+      A <code>handle</code> block intercepts an effect, providing an
+      implementation. The same business logic runs against a real provider
+      in production and a deterministic stub in tests:
+    </p>
+<pre><code><span class="tok-kw">effect</span> <span class="tok-type">LLMCall</span> {
+  <span class="tok-fn">complete</span>(prompt: <span class="tok-type">String</span>, opts: <span class="tok-type">LLMOptions</span>) -&gt; <span class="tok-type">String</span>
+}
+
+<span class="tok-kw">fn</span> <span class="tok-fn">summarize</span>(text: <span class="tok-type">String</span>) -&gt; <span class="tok-type">String</span> <span class="tok-kw">effect</span> [<span class="tok-type">LLMCall</span>] {
+  <span class="tok-type">LLMCall</span>.<span class="tok-fn">complete</span>(<span class="tok-str">"Summarize:\n"</span> + text, <span class="tok-type">LLMOptions</span>.<span class="tok-fn">default</span>())
+}
+
+<span class="tok-co">// in production</span>
+<span class="tok-kw">let</span> summary = <span class="tok-kw">handle</span>(<span class="tok-type">LLMCall</span>) {
+  <span class="tok-fn">complete</span>(p, opts) =&gt; <span class="tok-type">Anthropic</span>.<span class="tok-fn">claude</span>(p, opts).await
+} <span class="tok-kw">in</span> <span class="tok-fn">summarize</span>(article)
+
+<span class="tok-co">// in tests</span>
+<span class="tok-kw">let</span> stub = <span class="tok-kw">handle</span>(<span class="tok-type">LLMCall</span>) {
+  <span class="tok-fn">complete</span>(_, _) =&gt; <span class="tok-str">"stub summary for testing"</span>
+} <span class="tok-kw">in</span> <span class="tok-fn">summarize</span>(article)</code></pre>
+
+    <div class="callout is-note">
+      <div class="callout-title">No function coloring</div>
+      Yoru has no <code>async</code>/<code>await</code> syntax. Suspension
+      happens transparently inside effect handlers. A function that calls a
+      database or makes an HTTP request looks exactly like one that doesn't.
+      Its effects are in the signature, not its colour.
+    </div>
+
+    <!-- =================================================================== -->
+    <h2 id="concurrency">Actors</h2>
+    <p>
+      Any object can become an actor. Actors run on lightweight green
+      threads (M:N over OS threads) and communicate exclusively through
+      typed messages. The <em>Isolated Turn Principle</em> guarantees one
+      message at a time, with no locks.
+    </p>
+<pre><code><span class="tok-kw">actor</span> <span class="tok-type">ETLWorker</span> {
+  <span class="tok-kw">state</span> processed: <span class="tok-type">Int</span> = <span class="tok-num">0</span>
+  <span class="tok-kw">state</span> errors:    <span class="tok-type">Int</span> = <span class="tok-num">0</span>
+
+  <span class="tok-kw">receive</span> <span class="tok-type">Process</span>(record: <span class="tok-kw">iso</span> <span class="tok-type">Record</span>) {
+    <span class="tok-kw">match</span> self.<span class="tok-fn">transform</span>(record) {
+      <span class="tok-type">Ok</span>(out) =&gt; { self.sink &lt;- <span class="tok-type">Emit</span>(out); self.processed += <span class="tok-num">1</span> }
+      <span class="tok-type">Err</span>(e)  =&gt; { self.logger &lt;- <span class="tok-type">Log</span>(e); self.errors += <span class="tok-num">1</span> }
+    }
+  }
+
+  <span class="tok-kw">receive</span> <span class="tok-type">Shutdown</span> { self.sink &lt;- <span class="tok-type">Flush</span> }
+}</code></pre>
+
+    <h3 id="spawn-send"><code>spawn</code> · <code>&lt;-</code> · <code>ask</code></h3>
+    <ul>
+      <li><code>spawn</code> starts a task that belongs to the current scope's task group, so no dangling goroutines.</li>
+      <li><code>actor &lt;- Message</code> sends asynchronously (fire-and-forget).</li>
+      <li><code>actor.ask(Message)</code> awaits a typed reply.</li>
+    </ul>
+<pre><code><span class="tok-kw">let</span> results = <span class="tok-kw">task_group</span> {
+  <span class="tok-kw">let</span> a = <span class="tok-kw">spawn</span> <span class="tok-fn">fetch_user</span>(id: <span class="tok-num">1</span>)
+  <span class="tok-kw">let</span> b = <span class="tok-kw">spawn</span> <span class="tok-fn">fetch_orders</span>(user_id: <span class="tok-num">1</span>)
+  <span class="tok-kw">let</span> c = <span class="tok-kw">spawn</span> <span class="tok-fn">fetch_inventory</span>()
+  { user: <span class="tok-kw">await</span> a, orders: <span class="tok-kw">await</span> b, inventory: <span class="tok-kw">await</span> c }
+}
+<span class="tok-co">// If any task fails, the others are cancelled automatically.</span></code></pre>
+
+    <h3 id="supervision">Supervision trees</h3>
+    <p>OTP-inspired: a crashed child is an event, not an exception. The supervisor decides.</p>
+<pre><code><span class="tok-kw">let</span> sup = <span class="tok-type">Supervisor</span>.<span class="tok-fn">new</span>(
+  <span class="tok-attr">strategy</span>: .one_for_one,
+  <span class="tok-attr">children</span>: [
+    <span class="tok-type">Child</span>.<span class="tok-fn">spec</span>(<span class="tok-type">ETLWorker</span>,  restart: .permanent, max_restarts: <span class="tok-num">3</span>, window: <span class="tok-num">60</span>s),
+    <span class="tok-type">Child</span>.<span class="tok-fn">spec</span>(<span class="tok-type">HTTPService</span>, restart: .transient),
+  ]
+)
+sup.<span class="tok-fn">start</span>()</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="pipelines">Pipelines</h2>
+    <p>
+      Vassiliadis (2007) identifies three ETL parallelism axes: data,
+      pipeline, and component. Yoru encodes all three in syntax.
+    </p>
+<pre><code><span class="tok-kw">pipeline</span> <span class="tok-type">DicomIngestion</span> {
+  <span class="tok-attr">source</span>: <span class="tok-type">DICOMFetcher</span>.<span class="tok-fn">stream</span>(worklist)
+    |&gt; <span class="tok-kw">transform</span>: <span class="tok-type">DicomParser</span>.parse
+    |&gt; <span class="tok-kw">transform</span>: <span class="tok-type">MetadataEnricher</span>.enrich  <span class="tok-attr">partition</span>: <span class="tok-num">8</span>
+    |&gt; <span class="tok-kw">transform</span>: <span class="tok-type">HL7Mapper</span>.to_fhir
+    |&gt; <span class="tok-kw">sink</span>:      <span class="tok-type">FHIRStore</span>.upsert
+
+  <span class="tok-attr">on_error</span>:      .<span class="tok-fn">dead_letter_queue</span>(dlq: my_dlq, max_retries: <span class="tok-num">3</span>)
+  <span class="tok-attr">back_pressure</span>: .<span class="tok-fn">bounded</span>(capacity: <span class="tok-num">1024</span>)
+  <span class="tok-attr">checkpoint</span>:    .<span class="tok-fn">every</span>(<span class="tok-num">1000</span>.records)
+}
+
+<span class="tok-type">DicomIngestion</span>.<span class="tok-fn">run</span>() <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>, <span class="tok-type">HTTP</span>, <span class="tok-type">IO</span>]</code></pre>
+
+    <h3 id="partitioning">Partitioning, windowing, back-pressure</h3>
+    <ul>
+      <li><strong>Data parallelism</strong> via <code>partition: N</code> on any stage.</li>
+      <li><strong>Pipeline parallelism</strong> from the streaming model itself: stages run concurrently.</li>
+      <li><strong>Component parallelism</strong> with <code>Stream.merge([...])</code>.</li>
+    </ul>
+<pre><code><span class="tok-kw">let</span> hourly_summary = <span class="tok-type">EventStream</span>.<span class="tok-fn">from</span>(kafka_topic)
+  |&gt; <span class="tok-fn">window</span>(.tumbling(size: <span class="tok-num">5</span>.minutes))
+  |&gt; <span class="tok-fn">aggregate</span> { |batch| { count: batch.<span class="tok-fn">len</span>(), total: batch.<span class="tok-fn">map</span>(.amount).<span class="tok-fn">sum</span>() } }
+  |&gt; <span class="tok-kw">sink</span>: <span class="tok-type">Dashboard</span>.push</code></pre>
+    <div class="callout is-info">
+      <div class="callout-title">Back-pressure is a type</div>
+      A <code>Sink[T]</code> that can't keep up creates a compile-time
+      requirement that its upstream <code>Source[T]</code> declares a
+      <code>back_pressure</code> policy. There is no way to silently lose
+      records.
+    </div>
+
+    <!-- =================================================================== -->
+    <h2 id="agents">Tools</h2>
+    <p>
+      In current frameworks tools are JSON Schemas described in docstrings
+      and parsed at runtime, the source of an entire class of LLM bugs. In
+      Yoru, <code>tool</code> is a keyword. The compiler generates the
+      schema, validates arguments, and tracks the tool's effects.
+    </p>
+<pre><code><span class="tok-kw">tool</span> <span class="tok-type">SearchOrders</span> {
+  <span class="tok-attr">description</span>: <span class="tok-str">"Search orders by customer email or order ID"</span>
+  <span class="tok-kw">input</span> {
+    email:    <span class="tok-type">Option</span>[<span class="tok-type">String</span>] <span class="tok-attr">@doc</span>(<span class="tok-str">"Customer email"</span>)
+    order_id: <span class="tok-type">Option</span>[<span class="tok-type">String</span>] <span class="tok-attr">@doc</span>(<span class="tok-str">"Exact order ID"</span>)
+    limit:    <span class="tok-type">Int</span> = <span class="tok-num">10</span>     <span class="tok-attr">@doc</span>(<span class="tok-str">"Max results, 1-100"</span>)
+  }
+  <span class="tok-attr">output</span>:     [<span class="tok-type">OrderSummary</span>]
+  <span class="tok-attr">effect</span>:     [<span class="tok-type">DB</span>]
+  <span class="tok-attr">capability</span>: .read_only
+
+  <span class="tok-kw">fn</span> <span class="tok-fn">run</span>(self, i: <span class="tok-type">SearchOrders.Input</span>) -&gt; [<span class="tok-type">OrderSummary</span>] <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>] {
+    <span class="tok-type">DB</span>.<span class="tok-fn">query</span>(<span class="tok-str">"SELECT * FROM orders WHERE email = $1 OR id = $2 LIMIT $3"</span>,
+             [i.email, i.order_id, i.limit])
+  }
+}</code></pre>
+
+    <h3 id="agent-decl">Agents</h3>
+    <p>
+      An agent is an actor backed by an LLM reasoning loop with an explicit
+      tool registry, retry policy, and typed output schema.
+    </p>
+<pre><code><span class="tok-kw">agent</span> <span class="tok-type">OrderAgent</span> {
+  <span class="tok-attr">model</span>:  <span class="tok-str">"claude-sonnet-4-6"</span>
+  <span class="tok-attr">system</span>: <span class="tok-str">"You are a helpful order management assistant."</span>
+  <span class="tok-attr">tools</span>:  [<span class="tok-type">SearchOrders</span>, <span class="tok-type">CancelOrder</span>, <span class="tok-type">RefundOrder</span>]
+
+  <span class="tok-attr">output</span> {
+    action:  <span class="tok-type">String</span>
+    summary: <span class="tok-type">String</span>
+  }
+
+  <span class="tok-attr">config</span> {
+    max_turns:     <span class="tok-num">10</span>
+    budget_tokens: <span class="tok-num">8000</span>
+    temperature:   <span class="tok-num">0.2</span>
+  }
+}
+
+<span class="tok-kw">let</span> agent_ref = <span class="tok-kw">spawn</span> <span class="tok-type">OrderAgent</span>()
+<span class="tok-kw">let</span> reply: <span class="tok-type">Result</span>[<span class="tok-type">OrderAgent.Output</span>, <span class="tok-type">AgentError</span>] =
+  agent_ref.<span class="tok-fn">chat</span>(<span class="tok-str">"Refund order #ORD-4821 for customer@example.com"</span>)</code></pre>
+
+    <div class="callout is-note">
+      <div class="callout-title">Auto-retry with corrective messages</div>
+      When the LLM produces output that fails the <code>output</code>
+      schema, Yoru retries with a corrective system message describing the
+      validation error, up to <code>max_turns</code>. After that, the call
+      returns <code>Err{kind: "agent_output_invalid"}</code>.
+    </div>
+
+    <h3 id="mcp">MCP servers</h3>
+    <p>
+      An MCP server is declared at the module level. The compiler emits the
+      full JSON-RPC handler, capability negotiation, and tool registration.
+    </p>
+<pre><code><span class="tok-kw">mcp</span> <span class="tok-type">OrderServer</span> {
+  <span class="tok-attr">name</span>:    <span class="tok-str">"order-service"</span>
+  <span class="tok-attr">version</span>: <span class="tok-str">"1.0.0"</span>
+
+  <span class="tok-attr">tools</span>: [<span class="tok-type">SearchOrders</span>, <span class="tok-type">CancelOrder</span>, <span class="tok-type">RefundOrder</span>]
+
+  <span class="tok-attr">resources</span>: [
+    <span class="tok-type">Resource</span>.<span class="tok-fn">file</span>(<span class="tok-str">"schema"</span>, path: <span class="tok-str">"./schema.json"</span>),
+    <span class="tok-type">Resource</span>.<span class="tok-fn">dynamic</span>(<span class="tok-str">"recent_orders"</span>,
+                      <span class="tok-kw">fn</span>() =&gt; <span class="tok-type">DB</span>.<span class="tok-fn">query</span>(<span class="tok-str">"SELECT ... LIMIT 20"</span>))
+  ]
+
+  <span class="tok-attr">transport</span>: .stdio    <span class="tok-co">// or .http(port: 8080)</span>
+  <span class="tok-attr">auth</span>:      .api_key  <span class="tok-co">// or .none for local use</span>
+}</code></pre>
+    <p>Build a standalone MCP server with <code>yoru build --target mcp src/order_server.yr</code>.</p>
+
+    <!-- =================================================================== -->
+    <h2 id="services">HTTP services</h2>
+    <p>
+      <code>service</code> declares routes, middleware, and handlers. The
+      compiler emits the HTTP router and OpenAPI spec. No separate
+      framework, no proto files.
+    </p>
+<pre><code><span class="tok-kw">service</span> <span class="tok-type">UserAPI</span> {
+  <span class="tok-attr">prefix</span>:     <span class="tok-str">"/v1/users"</span>
+  <span class="tok-attr">middleware</span>: [<span class="tok-type">AuthMiddleware</span>, <span class="tok-type">RateLimiter</span>(rps: <span class="tok-num">1000</span>)]
+
+  <span class="tok-attr">GET</span> <span class="tok-str">"/"</span> -&gt; [<span class="tok-type">UserSummary</span>] <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>]
+  <span class="tok-kw">fn</span> <span class="tok-fn">list</span>(req: <span class="tok-type">Request</span>) -&gt; [<span class="tok-type">UserSummary</span>] {
+    <span class="tok-type">DB</span>.<span class="tok-fn">query</span>(<span class="tok-str">"SELECT id, email FROM users LIMIT 100"</span>)
+  }
+
+  <span class="tok-attr">POST</span> <span class="tok-str">"/"</span> -&gt; <span class="tok-type">User</span>
+  <span class="tok-attr">body</span>: <span class="tok-type">CreateUserRequest</span>
+  <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>, <span class="tok-type">Log</span>]
+  <span class="tok-kw">fn</span> <span class="tok-fn">create</span>(req: <span class="tok-type">Request</span>, body: <span class="tok-type">CreateUserRequest</span>) -&gt; <span class="tok-type">User</span> {
+    <span class="tok-kw">let</span> user = <span class="tok-type">DB</span>.<span class="tok-fn">insert</span>(body.<span class="tok-fn">into_user</span>())?
+    <span class="tok-type">Log</span>.<span class="tok-fn">info</span>(<span class="tok-str">"user_created"</span>, { id: user.id })
+    user
+  }
+
+  <span class="tok-attr">GET</span> <span class="tok-str">"/{id}"</span> -&gt; <span class="tok-type">User</span> <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>]
+  <span class="tok-kw">fn</span> <span class="tok-fn">get</span>(req: <span class="tok-type">Request</span>, id: <span class="tok-type">String</span>) -&gt; <span class="tok-type">Result</span>[<span class="tok-type">User</span>, <span class="tok-type">NotFound</span>] {
+    <span class="tok-type">DB</span>.<span class="tok-fn">find</span>(<span class="tok-type">User</span>, id) ?? <span class="tok-type">Err</span>(<span class="tok-type">NotFound</span>)
+  }
+}</code></pre>
+
+    <h3 id="middleware">Middleware, auth, rate limits</h3>
+    <p>
+      Middleware composes by declaration order. <code>AuthMiddleware</code>
+      verifies a JWT and provides the verified claims as an effect; the
+      rate limiter buckets requests by the route + auth subject.
+    </p>
+<pre><code><span class="tok-kw">let</span> auth = <span class="tok-type">JWT</span>.<span class="tok-fn">middleware</span>(
+  <span class="tok-attr">secret</span>:   <span class="tok-fn">env</span>(<span class="tok-str">"JWT_SECRET"</span>),
+  <span class="tok-attr">audience</span>: <span class="tok-str">"api.example.com"</span>,
+  <span class="tok-attr">leeway</span>:   <span class="tok-num">30</span>.seconds,
+)</code></pre>
+
+    <p>For gRPC, declare a service with the <code>grpc</code> tag; protobufs are emitted from object declarations:</p>
+<pre><code><span class="tok-kw">service</span> <span class="tok-type">UserRPC</span> : <span class="tok-kw">grpc</span> {
+  <span class="tok-attr">package</span>: <span class="tok-str">"user.v1"</span>
+  <span class="tok-kw">rpc</span> <span class="tok-fn">GetUser</span>(<span class="tok-type">GetUserRequest</span>) -&gt; <span class="tok-type">User</span>          <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>]
+  <span class="tok-kw">rpc</span> <span class="tok-fn">StreamUsers</span>(<span class="tok-type">Empty</span>) -&gt; <span class="tok-type">Stream</span>[<span class="tok-type">User</span>] <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>]
+}</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="spec">The specification, in one example</h2>
+    <p>
+      The following program is small enough to read top-to-bottom and
+      exercises every major feature: <code>tool</code>, <code>agent</code>,
+      <code>mcp</code>, capability scoping, the effect system, and
+      <code>Result</code> error handling.
+    </p>
+<pre><code><span class="tok-co">// Clinical Assistant: full agentic program</span>
+<span class="tok-kw">import</span> yoru.agent.*
+<span class="tok-kw">import</span> yoru.mcp.*
+
+<span class="tok-kw">tool</span> <span class="tok-type">GetPatientRecord</span> {
+  <span class="tok-attr">description</span>: <span class="tok-str">"Fetches a patient's clinical record by MRN"</span>
+  <span class="tok-kw">input</span>      { mrn: <span class="tok-type">String</span> <span class="tok-attr">@doc</span>(<span class="tok-str">"Medical Record Number"</span>) }
+  <span class="tok-attr">output</span>:     <span class="tok-type">Result</span>[<span class="tok-type">PatientRecord</span>, <span class="tok-type">NotFound</span>]
+  <span class="tok-attr">effect</span>:     [<span class="tok-type">DB</span>]
+  <span class="tok-attr">capability</span>: .phi_read     <span class="tok-co">// HIPAA scope required to invoke</span>
+
+  <span class="tok-kw">fn</span> <span class="tok-fn">run</span>(self, i: <span class="tok-type">GetPatientRecord.Input</span>) -&gt; <span class="tok-type">Result</span>[<span class="tok-type">PatientRecord</span>, <span class="tok-type">NotFound</span>]
+       <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>] {
+    <span class="tok-type">DB</span>.<span class="tok-fn">find</span>(<span class="tok-type">Patient</span>, i.mrn)
+  }
+}
+
+<span class="tok-kw">agent</span> <span class="tok-type">ClinicalAssistant</span> {
+  <span class="tok-attr">model</span>:  <span class="tok-str">"claude-sonnet-4-6"</span>
+  <span class="tok-attr">system</span>: <span class="tok-str">"You are a clinical decision support assistant. Cite record IDs."</span>
+  <span class="tok-attr">tools</span>:  [<span class="tok-type">GetPatientRecord</span>, <span class="tok-type">SummarizeRecord</span>]
+  <span class="tok-attr">config</span> { max_turns: <span class="tok-num">8</span>, budget_tokens: <span class="tok-num">4000</span>, temperature: <span class="tok-num">0.1</span> }
+}
+
+<span class="tok-kw">mcp</span> <span class="tok-type">ClinicalMCPServer</span> {
+  <span class="tok-attr">name</span>:    <span class="tok-str">"clinical-assistant"</span>
+  <span class="tok-attr">version</span>: <span class="tok-str">"1.0.0"</span>
+  <span class="tok-attr">tools</span>:   [<span class="tok-type">GetPatientRecord</span>, <span class="tok-type">SummarizeRecord</span>]
+  <span class="tok-attr">transport</span>: .<span class="tok-fn">http</span>(port: <span class="tok-num">3000</span>)
+  <span class="tok-attr">auth</span>:      .<span class="tok-fn">jwt</span>(audience: <span class="tok-str">"clinical-tools"</span>)
+}
+
+<span class="tok-kw">fn</span> <span class="tok-fn">main</span>() <span class="tok-kw">effect</span> [<span class="tok-type">IO</span>, <span class="tok-type">DB</span>, <span class="tok-type">LLM</span>, <span class="tok-type">Log</span>] {
+  <span class="tok-type">ClinicalMCPServer</span>.<span class="tok-fn">start</span>()
+  <span class="tok-type">Log</span>.<span class="tok-fn">info</span>(<span class="tok-str">"MCP server started"</span>, { port: <span class="tok-num">3000</span> })
+}</code></pre>
+
+    <!-- =================================================================== -->
+    <h2 id="keywords">Keyword reference</h2>
+    <table>
+      <thead><tr><th>Keyword</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>object</code></td>    <td>Named record type</td></tr>
+        <tr><td><code>blueprint</code></td> <td>Generic / parameterized object template</td></tr>
+        <tr><td><code>actor</code></td>     <td>Object with message-receive loop and isolated-turn semantics</td></tr>
+        <tr><td><code>agent</code></td>     <td>Actor backed by an LLM reasoning loop</td></tr>
+        <tr><td><code>tool</code></td>      <td>Typed function exposed to agents/MCP with auto-generated schema</td></tr>
+        <tr><td><code>mcp</code></td>       <td>MCP server declaration</td></tr>
+        <tr><td><code>service</code></td>   <td>REST or gRPC service</td></tr>
+        <tr><td><code>pipeline</code></td>  <td>Typed ETL pipeline with declarative parallelism</td></tr>
+        <tr><td><code>protocol</code> / <code>impl</code></td><td>Behavioural contract and implementation</td></tr>
+        <tr><td><code>effect</code> / <code>handle</code></td><td>Declare or intercept an effect</td></tr>
+        <tr><td><code>stream</code></td>    <td>Lazy, async sequence type</td></tr>
+        <tr><td><code>match</code></td>     <td>Exhaustive pattern matching</td></tr>
+        <tr><td><code>spawn</code> / <code>receive</code></td><td>Start an actor / declare a message handler</td></tr>
+        <tr><td><code>fn</code> / <code>let</code> / <code>mut</code></td><td>Function · immutable · mutable</td></tr>
+        <tr><td><code>iso</code> · <code>trn</code> · <code>ref</code> · <code>val</code> · <code>box</code> · <code>tag</code></td>
+            <td>Reference capability annotations</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="operators">Operator reference</h2>
+    <table>
+      <thead><tr><th>Operator</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;-</code></td><td>Send message to actor (async, fire-and-forget)</td></tr>
+        <tr><td><code>?</code></td>    <td>Propagate <code>Err</code> from <code>Result</code></td></tr>
+        <tr><td><code>??</code></td>   <td>Unwrap <code>Ok</code> or provide default / <code>Err</code> alternative</td></tr>
+        <tr><td><code>|&gt;</code></td><td>Pipeline stage composition</td></tr>
+        <tr><td><code>=&gt;</code></td><td>Match arm body / lambda shorthand</td></tr>
+        <tr><td><code>...</code></td>  <td>Spread / rest pattern in destructuring</td></tr>
+      </tbody>
+    </table>
+
+    <!-- =================================================================== -->
+    <h2 id="roadmap">Roadmap</h2>
+    <table>
+      <thead><tr><th>Phase</th><th>What</th><th>Target use</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Phase 0</strong><br><em>now</em></td>
+          <td>Tree-walking interpreter on Go runtime; full type-checking, effect inference, actor scheduling.</td>
+          <td>Production agents, MCP servers, small services.</td>
+        </tr>
+        <tr>
+          <td>Phase 1</td>
+          <td>Bytecode compiler + stack VM; effect handler inlining.</td>
+          <td>Higher-throughput services and ETL.</td>
+        </tr>
+        <tr>
+          <td>Phase 2</td>
+          <td>LLVM IR emission; ahead-of-time compilation; arena allocator.</td>
+          <td>Latency-sensitive services, large ETL.</td>
+        </tr>
+        <tr>
+          <td>Phase 3</td>
+          <td>Profile-guided optimization, WASM target, GPU offload for LLM pre/post processing.</td>
+          <td>Full production.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- =================================================================== -->
+    <h2 id="design-decisions">Design decisions, in brief</h2>
+
+    <h3>Why no inheritance?</h3>
+    <p>
+      The research (Flageol et al., 2023; the original GoF book) and every
+      serious modern OOP system (Rust traits, Go interfaces, Swift
+      protocols) has moved away from classical inheritance because of
+      fragile-base-class coupling. Yoru provides explicit delegation for the
+      cases where "is-a" genuinely models the domain.
+    </p>
+
+    <h3>Why algebraic effects instead of async/await?</h3>
+    <p>
+      async/await colours the call graph: once a function is
+      <code>async</code>, every caller must be. Algebraic effects don't.
+      Leijen's <em>Structured Asynchrony</em> paper (Microsoft Research,
+      2018) shows that full async/await (including cancellation and
+      timeouts) can be implemented as a library on top of algebraic
+      effects, but not the other way around.
+    </p>
+
+    <h3>Why reference capabilities?</h3>
+    <p>
+      Go's "share memory by communicating" is aspirational advice, not
+      enforcement. Rust's borrow checker enforces uniqueness but imposes a
+      steep mental model and has no actor story. Pony's reference
+      capabilities are the only production feature that proves data-race
+      freedom at compile time without forcing a borrow-checker tax. Yoru
+      adopts a simplified six-capability subset.
+    </p>
+
+    <h3>Why interpreted first?</h3>
+    <p>
+      Crystal demonstrates that a language with strong ergonomics can start
+      interpreted and later compile to native. Building the type checker,
+      effect inference engine, and actor scheduler before committing to an
+      IR reduces iteration cost. Phase 0 hosts on Go because its scheduler
+      and GC are well-suited to a green-thread interpreter.
+    </p>
+
+  </main>
+
+  <!-- ==================== right-side overview (TOC) ==================== -->
+  <aside class="toc-right" aria-label="On this page">
+    <h4>On this page</h4>
+    <ul>
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#getting-started">Quick start</a></li>
+      <li><a href="#install">Installation</a></li>
+      <li><a href="#hello">Hello, Yoru</a></li>
+      <li><a href="#cli">CLI</a></li>
+      <li><a href="#language-tour">Language tour</a></li>
+      <li><a href="#types">Types</a></li>
+      <li><a href="#objects">Objects</a></li>
+      <li><a href="#enums">Enums</a></li>
+      <li><a href="#errors">Errors</a></li>
+      <li><a href="#capabilities">Capabilities</a></li>
+      <li><a href="#effects">Effects</a></li>
+      <li><a href="#concurrency">Actors</a></li>
+      <li><a href="#supervision">Supervision</a></li>
+      <li><a href="#pipelines">Pipelines</a></li>
+      <li><a href="#agents">Tools &amp; agents</a></li>
+      <li><a href="#mcp">MCP</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#spec">Full example</a></li>
+      <li><a href="#keywords">Keywords</a></li>
+      <li><a href="#operators">Operators</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+      <li><a href="#design-decisions">Design decisions</a></li>
+    </ul>
+  </aside>
+
+</div>
+
+<footer class="footer">
+  <div class="container container-wide footer-bottom">
+    <span><a href="../index.html" style="display:inline-flex;align-items:center;gap:.4rem;color:inherit;text-decoration:none;"><span class="brand-mark">夜</span> Yoru v0.1.0 · Phase 0 · MIT</a></span>
+    <span><em>"In the night, things become clear that daylight obscures."</em></span>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js" defer></script>
+</body>
+</html>
