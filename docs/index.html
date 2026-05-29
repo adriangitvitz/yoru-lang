@@ -19,7 +19,7 @@
       <span>Yoru</span>
       <span class="brand-tag">v0.1 · Phase 0</span>
     </a>
-    <nav class="nav-links" aria-label="Primary">
+    <nav class="nav-links" id="primary-nav" aria-label="Primary">
       <a href="../index.html">Home</a>
       <a href="index.html" class="is-active">Docs</a>
       <a href="index.html#spec">Spec</a>
@@ -34,13 +34,20 @@
         <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
       </svg>
     </button>
+    <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-nav">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 </header>
 
 <div class="container container-wide docs-shell">
 
-  <!-- ==================== sidebar nav ==================== -->
-  <aside class="toc-sidebar" aria-label="Documentation sections">
+  <button class="docs-menu-toggle" type="button" aria-expanded="false" aria-controls="docs-toc">
+    <span>Documentation menu</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <aside class="toc-sidebar" id="docs-toc" aria-label="Documentation sections">
     <h4>Getting started</h4>
     <ul>
       <li><a href="#introduction">Introduction</a></li>

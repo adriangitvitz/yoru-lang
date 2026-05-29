@@ -19,7 +19,11 @@
       <span>Yoru</span>
       <span class="brand-tag">v0.1 · Phase 0</span>
     </a>
-    <nav class="nav-links" aria-label="Primary">
+    <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-nav">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <nav class="nav-links" id="primary-nav" aria-label="Primary">
       <a href="docs/index.html">Docs</a>
       <a href="docs/index.html#language-tour">Language</a>
       <a href="docs/index.html#agents">Agents</a>
@@ -40,7 +44,7 @@
       <h1>
         <span class="hero-kanji gradient-text-warm">夜</span>
         <span class="gradient-text">Yoru</span>
-        · a language for the&nbsp;agentic&nbsp;era
+        a language for the agentic era
       </h1>
       <p class="hero-sub">
         Yoru makes <strong>tools</strong>, <strong>agents</strong>,
