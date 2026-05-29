@@ -15,7 +15,7 @@
 <header class="topbar">
   <div class="container topbar-inner">
     <a href="index.html" class="brand">
-      <span class="brand-mark">夜</span>
+      <span class="brand-mascot" role="img" aria-label="Yoru marten"></span>
       <span>Yoru</span>
       <span class="brand-tag">v0.1 · Phase 0</span>
     </a>
@@ -25,11 +25,7 @@
     </button>
     <nav class="nav-links" id="primary-nav" aria-label="Primary">
       <a href="docs/index.html">Docs</a>
-      <a href="docs/index.html#language-tour">Language</a>
-      <a href="docs/index.html#agents">Agents</a>
-      <a href="docs/index.html#pipelines">Pipelines</a>
-      <a href="docs/index.html#services">Services</a>
-      <a href="docs/index.html#spec">Spec</a>
+      <a href="https://github.com/adriangitvitz/yoru" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
 </header>
@@ -42,16 +38,17 @@
         Phase 0 · 716 tests passing · Tree-walking interpreter
       </span>
       <h1>
-        <span class="hero-kanji gradient-text-warm">夜</span>
-        <span class="gradient-text">Yoru</span>
-        a language for the agentic era
+        A language for <span class="gradient-text">agentic systems</span>
+        that still reads like software.
       </h1>
+      <p class="hero-familiarity">
+        Go runtime · one binary · readable syntax.
+      </p>
       <p class="hero-sub">
-        Yoru makes <strong>tools</strong>, <strong>agents</strong>,
+        <strong>Tools</strong>, <strong>agents</strong>,
         <strong>MCP servers</strong>, <strong>supervised actors</strong> and
-        <strong>ETL pipelines</strong> first-class language constructs, not
-        libraries bolted on after the fact. Static types, algebraic effects,
-        and reference capabilities by default.
+        <strong>ETL pipelines</strong> as first-class language constructs,
+        not libraries bolted on after the fact.
       </p>
       <div class="cta-row">
         <a class="btn btn-primary" href="docs/index.html#getting-started">
@@ -278,55 +275,241 @@
 
 <section class="section">
   <div class="container">
-    <h2>Built on 40 years of language research.</h2>
+    <h2>Not a framework stack. A <span class="gradient-text">language shape</span>.</h2>
     <p class="section-lead">
-      Yoru is a deliberate synthesis, not invention from thin air. Five
-      research-backed foundations, each with citations in the spec.
+      <code>tool</code>, <code>agent</code>, <code>effect</code> and
+      <code>pipeline</code> are keywords, not annotations, not decorators,
+      not a framework. The compiler understands what they mean.
+    </p>
+
+    <div class="shape-grid">
+      <article class="shape">
+        <div class="shape-kw"><code>tool</code></div>
+        <h3>Typed actions</h3>
+        <p>Inputs, outputs, effects and capabilities live in the signature. JSON Schema is generated, not hand-written.</p>
+      </article>
+
+      <article class="shape">
+        <div class="shape-kw"><code>agent</code></div>
+        <h3>Bounded autonomy</h3>
+        <p>Model, system prompt, available tools, max turns and token budgets declared once. Re-spawnable as actors.</p>
+      </article>
+
+      <article class="shape">
+        <div class="shape-kw"><code>effect</code></div>
+        <h3>Honest side-effects</h3>
+        <p>Async, error, state and I/O share one mechanism. Swap a real LLM for a stub by changing a <code>handle</code> block.</p>
+      </article>
+
+      <article class="shape">
+        <div class="shape-kw"><code>pipeline</code></div>
+        <h3>Typed ETL by syntax</h3>
+        <p>Sources, sinks, partitions, back-pressure, checkpoints and dead-letter queues, all enforced by the type system.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section class="section">
+  <div class="container">
+    <h2>One language, every step.</h2>
+    <p class="section-lead">
+      From <code>println</code> to a production service, you stay in the
+      same file. No proto, no codegen, no separate framework runtime.
+    </p>
+
+    <ol class="proof-timeline">
+      <li class="proof-row">
+        <div class="proof-marker"><span class="proof-num">01</span></div>
+        <div class="proof-text">
+          <h3>Hello</h3>
+          <p>The smallest possible Yoru file. <code>fn main()</code> and a
+             call to <code>println</code>. Run it directly with
+             <code>yoru run hello.yr</code>.</p>
+        </div>
+        <div class="proof-code">
+<pre><code><span class="tok-kw">fn</span> <span class="tok-fn">main</span>() {
+  <span class="tok-fn">println</span>(<span class="tok-str">"hello"</span>)
+}</code></pre>
+        </div>
+      </li>
+
+      <li class="proof-row proof-row--flip">
+        <div class="proof-marker"><span class="proof-num">02</span></div>
+        <div class="proof-text">
+          <h3>Tool</h3>
+          <p>Give the same function a typed signature. Inputs, outputs and
+             effects are now part of the type. JSON Schema gets generated
+             from the source, not hand-written.</p>
+        </div>
+        <div class="proof-code">
+<pre><code><span class="tok-kw">tool</span> <span class="tok-type">Echo</span> {
+  <span class="tok-kw">input</span>  { msg: <span class="tok-type">String</span> }
+  <span class="tok-attr">output</span>: <span class="tok-type">String</span>
+
+  <span class="tok-kw">fn</span> <span class="tok-fn">run</span>(self, i) {
+    i.msg
+  }
+}</code></pre>
+        </div>
+      </li>
+
+      <li class="proof-row">
+        <div class="proof-marker"><span class="proof-num">03</span></div>
+        <div class="proof-text">
+          <h3>Agent</h3>
+          <p>Wrap one or more tools in an agent. Model, prompt, budget
+             and tool list are declared in one place. The compiler enforces
+             that every tool is well-typed.</p>
+        </div>
+        <div class="proof-code">
+<pre><code><span class="tok-kw">agent</span> <span class="tok-type">Helper</span> {
+  <span class="tok-attr">model</span>:  <span class="tok-str">"claude-sonnet-4-6"</span>
+  <span class="tok-attr">system</span>: <span class="tok-str">"Reply briefly."</span>
+  <span class="tok-attr">tools</span>:  [<span class="tok-type">Echo</span>]
+  <span class="tok-attr">config</span> { max_turns: <span class="tok-num">6</span> }
+}</code></pre>
+        </div>
+      </li>
+
+      <li class="proof-row proof-row--flip">
+        <div class="proof-marker"><span class="proof-num">04</span></div>
+        <div class="proof-text">
+          <h3>Pipeline</h3>
+          <p>Stream input through the agent. Sources, transforms and sinks
+             are first-class. Back-pressure, partitioning and dead-letter
+             queues are properties of the type, not the framework.</p>
+        </div>
+        <div class="proof-code">
+<pre><code><span class="tok-kw">pipeline</span> <span class="tok-type">Greet</span> {
+  <span class="tok-attr">source</span>: <span class="tok-type">Names</span>.<span class="tok-fn">stream</span>()
+    |&gt; <span class="tok-kw">transform</span>: <span class="tok-type">Helper</span>.chat
+    |&gt; <span class="tok-kw">sink</span>:      <span class="tok-type">Stdout</span>
+}</code></pre>
+        </div>
+      </li>
+
+      <li class="proof-row">
+        <div class="proof-marker proof-marker--end"><span class="proof-num">05</span></div>
+        <div class="proof-text">
+          <h3>Service</h3>
+          <p>Expose the same pipeline over HTTP. Middleware, routing and
+             effects compose with everything above. Still one file. Still
+             no codegen step.</p>
+        </div>
+        <div class="proof-code">
+<pre><code><span class="tok-kw">service</span> <span class="tok-type">GreetAPI</span> {
+  <span class="tok-attr">prefix</span>:     <span class="tok-str">"/v1"</span>
+  <span class="tok-attr">middleware</span>: [<span class="tok-type">AuthMiddleware</span>]
+
+  <span class="tok-attr">POST</span> <span class="tok-str">"/greet"</span> -&gt; <span class="tok-type">String</span>
+}</code></pre>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<hr>
+
+<section class="section">
+  <div class="container">
+    <h2>Yoru <span class="gradient-text">borrows</span> what already worked.</h2>
+    <p class="section-lead">
+      Nothing here is new. The novelty is the composition: six well-studied
+      ideas, lined up so they reinforce instead of fight each other. Each one
+      carries a citation in the spec.
     </p>
 
     <div class="pillars">
       <article class="pillar">
-        <span class="pillar-no">01</span>
-        <div>
-          <h3>Behavioral OOP</h3>
-          <p>Capability-secure objects without classical inheritance. Composition by delegation, contracts by protocol. (Flageol et al., 2023)</p>
-        </div>
+        <div class="pillar-from">from</div>
+        <h3>BEAM (Erlang / Elixir)</h3>
+        <p>Isolated-Turn actors, M:N fibers, supervision trees. Failures are events, not crashes. <em>(De Koster et al., AGERE 2016)</em></p>
       </article>
       <article class="pillar">
-        <span class="pillar-no">02</span>
-        <div>
-          <h3>Actor-native concurrency</h3>
-          <p>Isolated Turn Principle: one message at a time, no shared mutable state, M:N scheduled fibers. (De Koster et al., AGERE 2016)</p>
-        </div>
+        <div class="pillar-from">from</div>
+        <h3>Koka, Eff, OCaml 5</h3>
+        <p>Algebraic effects unify async, errors, state and I/O. Strictly more expressive than async/await. <em>(Leijen, 2016; Dolan et al., 2017)</em></p>
       </article>
       <article class="pillar">
-        <span class="pillar-no">03</span>
-        <div>
-          <h3>Algebraic effects</h3>
-          <p>Strictly more expressive than async/await. Suspend, resume, retry, mock, all in the type system. (Leijen, 2016; Dolan et al., 2017)</p>
-        </div>
+        <div class="pillar-from">from</div>
+        <h3>Pony</h3>
+        <p>Six reference capabilities (<code>iso</code>, <code>val</code>, <code>ref</code>, <code>tag</code>…). Data-race freedom proven at compile time. <em>(Clebsch &amp; Drossopoulou, OOPSLA 2013)</em></p>
       </article>
       <article class="pillar">
-        <span class="pillar-no">04</span>
-        <div>
-          <h3>First-class pipelines</h3>
-          <p>The three parallelism axes (data, pipeline, component) encoded directly in syntax. (Vassiliadis et al., DaWaK 2007)</p>
-        </div>
+        <div class="pillar-from">from</div>
+        <h3>Spark, Dataflow, Beam</h3>
+        <p>The three parallelism axes (data, pipeline, component) encoded directly in syntax. <em>(Vassiliadis et al., DaWaK 2007)</em></p>
       </article>
       <article class="pillar">
-        <span class="pillar-no">05</span>
-        <div>
-          <h3>Native tool / agent / MCP</h3>
-          <p>Typed tools eliminate the schema-hallucination class of bugs. Auditable traces and capability scoping by default. (ToolLLM, ICLR 2024)</p>
-        </div>
+        <div class="pillar-from">from</div>
+        <h3>ToolLLM &amp; MCP</h3>
+        <p>Typed tool calls, capability scoping, auditable traces. The schema-hallucination bug class disappears. <em>(ToolLLM, ICLR 2024)</em></p>
       </article>
       <article class="pillar">
-        <span class="pillar-no">06</span>
-        <div>
-          <h3>Reference capabilities</h3>
-          <p>Pony's six-capability model, simplified. The compiler enforces ownership without a borrow-checker mental tax. (Clebsch &amp; Drossopoulou, OOPSLA 2013)</p>
-        </div>
+        <div class="pillar-from">from</div>
+        <h3>Behavioural object research</h3>
+        <p>Capability-secure objects, composition over inheritance, contracts by protocol. <em>(Flageol et al., 2023)</em></p>
       </article>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section class="section section-start">
+  <div class="container">
+    <h2 style="text-align:center;"><span class="gradient-text">Start</span> with Yoru</h2>
+    <p class="section-lead" style="text-align:center; margin-left:auto; margin-right:auto;">
+      Three doors. Pick the one that matches how you like to learn.
+      Each one tells you how long it should take.
+    </p>
+
+    <div class="feature-grid">
+      <a class="feature" href="docs/index.html#install" style="color: inherit;">
+        <span class="feature-time">~5 min</span>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+        </div>
+        <h3>First project</h3>
+        <p>Build the Go binary, drop it on your PATH, run your first <code>.yr</code> file. Hello world to working REPL.</p>
+      </a>
+      <a class="feature" href="docs/index.html#language-tour" style="color: inherit;">
+        <span class="feature-time">~30 min</span>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3 1 9l11 6 11-6-11-6zM1 16l11 6 11-6"/>
+          </svg>
+        </div>
+        <h3>Learn path</h3>
+        <p>A guided tour through bindings, objects, effects, actors, pipelines, and agents. One concept per page.</p>
+      </a>
+      <a class="feature" href="docs/index.html#spec" style="color: inherit;">
+        <span class="feature-time">reference</span>
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </div>
+        <h3>Spec</h3>
+        <p>Full design rationale, comparisons, and the research that backs every decision. Read at your own pace.</p>
+      </a>
+    </div>
+
+    <div class="start-mascot-wrap" aria-hidden="true">
+      <img class="start-mascot" src="assets/img/Layer_1.svg" alt="">
+      <p class="start-mascot-caption">
+        Start small. Grow into agents, services, and pipelines.
+      </p>
     </div>
   </div>
 </section>
@@ -337,8 +520,8 @@
   <div class="container">
     <h2>How Yoru compares.</h2>
     <p class="section-lead">
-      Every existing language picks a side. Yoru refuses the trade-off, at
-      the cost of being a new language you have to learn.
+      Five dimensions that decide whether agentic systems are a language
+      feature or a framework problem.
     </p>
 
     <div class="compare-wrap">
@@ -350,67 +533,49 @@
             <th>Python</th>
             <th>Elixir</th>
             <th>Rust</th>
-            <th>Pony</th>
             <th class="yoru-col">Yoru</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>Structural OOP</td>          <td class="partial">~</td><td class="partial">~</td><td class="partial">~</td><td class="ok">✓</td><td class="partial">~</td><td class="yoru-col ok">✓</td></tr>
-          <tr><td>Reference capabilities</td>  <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="partial">~</td><td class="ok">✓</td>     <td class="yoru-col ok">✓</td></tr>
-          <tr><td>Algebraic effects</td>       <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="partial">~</td><td class="yoru-col ok">✓</td></tr>
-          <tr><td>Native actor model</td>      <td class="no">✗</td>     <td class="no">✗</td>     <td class="ok">✓</td>     <td class="no">✗</td>     <td class="ok">✓</td>     <td class="yoru-col ok">✓</td></tr>
-          <tr><td>First-class pipelines</td>   <td class="partial">~</td><td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
-          <tr><td>Native tool / agent / MCP</td><td class="no">✗</td>    <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
-          <tr><td>Zero function coloring</td>  <td class="ok">✓*</td>    <td class="no">✗</td>     <td class="ok">✓</td>     <td class="no">✗</td>     <td class="ok">✓</td>     <td class="yoru-col ok">✓</td></tr>
-          <tr><td>Supervision trees</td>       <td class="no">✗</td>     <td class="no">✗</td>     <td class="ok">✓</td>     <td class="no">✗</td>     <td class="ok">✓</td>     <td class="yoru-col ok">✓</td></tr>
-          <tr><td>Native REST &amp; gRPC service</td><td class="ok">✓</td><td class="no">✗</td>   <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
+          <tr><td>Native tool / agent / MCP</td><td class="no">✗</td>    <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
+          <tr><td>Algebraic effects</td>       <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
+          <tr><td>First-class pipelines</td>   <td class="partial">~</td><td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
+          <tr><td>Actors + supervision trees</td><td class="no">✗</td>   <td class="no">✗</td>     <td class="ok">✓</td>     <td class="no">✗</td>     <td class="yoru-col ok">✓</td></tr>
+          <tr><td>Reference capabilities</td>  <td class="no">✗</td>     <td class="no">✗</td>     <td class="no">✗</td>     <td class="partial">~</td><td class="yoru-col ok">✓</td></tr>
         </tbody>
       </table>
     </div>
     <p style="font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem;">
       <span class="ok">✓</span> full · <span class="partial">~</span> partial / library-level · <span class="no">✗</span> not available.
-      &nbsp;<em>* Go goroutines have no function coloring, but its HTTP/gRPC stack still requires explicit async patterns.</em>
     </p>
   </div>
 </section>
 
 <hr>
 
-<section class="section">
+<section class="section section-identity">
   <div class="container">
-    <h2 style="text-align:center;"><span class="gradient-text">Start</span> with Yoru</h2>
-    <div class="feature-grid">
-      <a class="feature" href="docs/index.html#install" style="color: inherit;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-          </svg>
-        </div>
-        <h3>Install</h3>
-        <p>Build the Go binary from source, drop it on your PATH, run a <code>.yr</code> file in under five minutes.</p>
+    <h2 style="text-align:center;">For engineers building <span class="gradient-text">long-lived systems</span>.</h2>
+    <p class="identity-lead">
+      Long-lived services. Orchestration. Agents. Data flows.
+      If your day involves one or more of these, Yoru exists to remove
+      seams from your stack, not add another runtime to your dependency tree.
+    </p>
+    <div class="identity-tags" aria-hidden="true">
+      <span>services</span>
+      <span>orchestration</span>
+      <span>agents</span>
+      <span>data flows</span>
+      <span>actors</span>
+      <span>MCP servers</span>
+    </div>
+    <div class="identity-cta">
+      <a class="btn btn-primary" href="docs/index.html#getting-started">
+        Get started
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </a>
-      <a class="feature" href="docs/index.html#language-tour" style="color: inherit;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3 1 9l11 6 11-6-11-6zM1 16l11 6 11-6"/>
-          </svg>
-        </div>
-        <h3>Learn</h3>
-        <p>A hands-on tour of bindings, objects, enums, effects, actors, pipelines, and agents.</p>
-      </a>
-      <a class="feature" href="docs/index.html#spec" style="color: inherit;">
-        <div class="feature-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-        </div>
-        <h3>Spec</h3>
-        <p>Read the full design rationale, comparisons, and the research that backs every decision.</p>
-      </a>
+      <a class="btn btn-secondary" href="docs/index.html">Read the docs</a>
     </div>
   </div>
 </section>
@@ -419,7 +584,8 @@
   <div class="container footer-grid">
     <div>
       <a href="index.html" class="brand">
-        <span class="brand-mark">夜</span><span>Yoru</span>
+        <span class="brand-mascot" role="img" aria-label="Yoru marten"></span>
+        <span>Yoru</span>
       </a>
       <p style="margin-top: 0.6rem; max-width: 24rem;">
         <em>"In the night, things become clear that daylight obscures."</em>
@@ -454,7 +620,7 @@
   </div>
   <div class="container footer-bottom">
     <span>Yoru v0.1.0 · Phase 0 · MIT licensed</span>
-    <span>夜 · built for the agentic era</span>
+    <span>built for the agentic era</span>
   </div>
 </footer>
 
