@@ -81,6 +81,8 @@
     <ul>
       <li><a href="#agents">Tools</a></li>
       <li><a href="#agent-decl">Agents</a></li>
+      <li><a href="#tagged-tools">Tagged-union inputs</a></li>
+      <li><a href="#self-minting">Self-minting agents</a></li>
       <li><a href="#mcp">MCP servers</a></li>
     </ul>
 
@@ -88,6 +90,14 @@
     <ul>
       <li><a href="#services">REST handlers</a></li>
       <li><a href="#middleware">Middleware</a></li>
+    </ul>
+
+    <h4>Standard library</h4>
+    <ul>
+      <li><a href="#stdlib-fs">FS &amp; Path</a></li>
+      <li><a href="#stdlib-fs-session">Read-before-edit tracker</a></li>
+      <li><a href="#stdlib-text">Fuzzy &amp; Diff</a></li>
+      <li><a href="#stdlib-builtins">Builtins</a></li>
     </ul>
 
     <h4>Reference</h4>
@@ -100,7 +110,6 @@
     </ul>
   </aside>
 
-  <!-- ==================== content ==================== -->
   <main class="docs-content">
 
     <h1>The Yoru Documentation</h1>
@@ -112,7 +121,6 @@
       you'll have the working surface of the language.
     </p>
 
-    <!-- =================================================================== -->
     <h2 id="introduction">Introduction</h2>
     <p>
       <strong>Yoru</strong> (夜, "night") treats tools, agents, MCP servers,
@@ -128,7 +136,6 @@
       and LLVM backend are scheduled for Phase 1 and Phase 2.
     </p>
 
-    <!-- =================================================================== -->
     <h2 id="getting-started">Quick start</h2>
     <p>Three commands take you from clone to a running program:</p>
 <pre><code><span class="tok-co"># 1. clone &amp; build</span>
@@ -142,7 +149,6 @@ echo 'fn main() { println("hello, yoru") }' &gt; hello.yr
 ./yoru run hello.yr
 <span class="tok-co">#=> hello, yoru</span></code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="install">Installation</h2>
     <p>Yoru ships as a single Go binary. Build from source:</p>
 <pre><code>git clone https://github.com/adriangitvitz/yoru
@@ -166,7 +172,6 @@ yoru version
       </tbody>
     </table>
 
-    <!-- =================================================================== -->
     <h2 id="hello">Hello, Yoru</h2>
 <pre><code><span class="tok-kw">fn</span> <span class="tok-fn">greet</span>(name: <span class="tok-type">String</span>) -&gt; <span class="tok-type">String</span> {
   <span class="tok-str">"hello, "</span> + name
@@ -184,20 +189,31 @@ yoru version
       <li>Lists use <code>[…]</code>; iteration uses <code>for … in …</code>.</li>
     </ul>
 
-    <!-- =================================================================== -->
     <h2 id="cli">The <code>yoru</code> CLI</h2>
     <table>
       <thead><tr><th>Command</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><code>yoru run file.yr</code></td><td>Lex, parse, type-check, evaluate.</td></tr>
+        <tr><td><code>yoru run file.yr [args...]</code></td><td>Lex, parse, type-check, evaluate. Trailing args reach the script via <code>args()</code>.</td></tr>
         <tr><td><code>yoru check file.yr</code></td><td>Type-check only (fast feedback in editors).</td></tr>
         <tr><td><code>yoru fmt file.yr</code></td><td>Canonical formatter.</td></tr>
         <tr><td><code>yoru repl</code></td><td>Interactive REPL.</td></tr>
         <tr><td><code>yoru run ./app/</code></td><td>Multi-file project; auto-starts any declared <code>service</code>.</td></tr>
+        <tr><td><code>yoru build --target mcp --output bin file.yr</code></td><td>Standalone MCP server binary (JSON-RPC over stdio).</td></tr>
+        <tr><td><code>yoru build --target http --output bin file.yr</code></td><td>Standalone HTTP service binary.</td></tr>
+        <tr><td><code>yoru build --target cli --output bin file.yr</code></td><td>Standalone CLI binary. Forwards its own <code>os.Args[1:]</code> into <code>args()</code> and mirrors the LLM-client env-var selection.</td></tr>
       </tbody>
     </table>
 
-    <!-- =================================================================== -->
+    <p>
+      Trailing CLI arguments reach a script through the <code>args()</code>
+      builtin. The <code>cli</code> build target produces a binary that
+      forwards its own arguments the same way.
+    </p>
+<pre><code>yoru run scripts/agent.yr <span class="tok-str">"Read /tmp/notes.md and fix the typo on line 3"</span>
+
+yoru build --target cli --output ./agent scripts/agent.yr
+./agent <span class="tok-str">"Read /tmp/notes.md and ..."</span></code></pre>
+
     <h2 id="language-tour">Bindings, functions, control flow</h2>
 <pre><code><span class="tok-co">// immutable by default</span>
 <span class="tok-kw">let</span> answer = <span class="tok-num">42</span>
@@ -213,7 +229,6 @@ counter += <span class="tok-num">1</span>
 <span class="tok-kw">while</span> counter &lt; <span class="tok-num">5</span> { counter += <span class="tok-num">1</span> }
 <span class="tok-kw">for</span> i <span class="tok-kw">in</span> [<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>] { <span class="tok-fn">println</span>(i) }</code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="types">Primitive types &amp; collections</h2>
     <table>
       <thead><tr><th>Type</th><th>Examples</th></tr></thead>
@@ -228,7 +243,6 @@ counter += <span class="tok-num">1</span>
       </tbody>
     </table>
 
-    <!-- =================================================================== -->
     <h2 id="objects">Objects &amp; protocols</h2>
     <p>Classical OOP conflates identity, state, and behavior. Yoru splits them:</p>
 <pre><code><span class="tok-co">// an Object is a named, capability-qualified record</span>
@@ -259,7 +273,6 @@ counter += <span class="tok-num">1</span>
   permissions: [<span class="tok-type">Permission</span>],
 }</code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="enums">Enums &amp; pattern matching</h2>
 <pre><code><span class="tok-kw">enum</span> <span class="tok-type">PipelineEvent</span> {
   <span class="tok-type">Record</span>(data: <span class="tok-kw">val</span> <span class="tok-type">Record</span>)
@@ -279,7 +292,6 @@ counter += <span class="tok-num">1</span>
 }</code></pre>
     <p>Match is exhaustive: the compiler rejects a missing arm.</p>
 
-    <!-- =================================================================== -->
     <h2 id="errors">Errors &amp; <code>Result</code></h2>
     <p>
       <code>Result[T, E]</code> is core, not stdlib. The <code>?</code>
@@ -293,7 +305,6 @@ counter += <span class="tok-num">1</span>
     <p>The <code>??</code> operator provides a default or an alternative <code>Err</code>:</p>
 <pre><code><span class="tok-kw">let</span> user = <span class="tok-type">DB</span>.<span class="tok-fn">find</span>(<span class="tok-type">User</span>, id) ?? <span class="tok-type">Err</span>(<span class="tok-type">NotFound</span>)</code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="capabilities">Reference capabilities</h2>
     <p>
       Borrowed from Pony. Capabilities are annotations the compiler checks
@@ -319,7 +330,6 @@ actor_ref &lt;- msg
 <span class="tok-kw">spawn</span> <span class="tok-fn">worker_a</span>(config)
 <span class="tok-kw">spawn</span> <span class="tok-fn">worker_b</span>(config)</code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="effects">Why algebraic effects?</h2>
     <p>
       Exceptions only propagate <em>up</em> the call stack. Algebraic effects
@@ -381,7 +391,6 @@ actor_ref &lt;- msg
       Its effects are in the signature, not its colour.
     </div>
 
-    <!-- =================================================================== -->
     <h2 id="concurrency">Actors</h2>
     <p>
       Any object can become an actor. Actors run on lightweight green
@@ -428,7 +437,6 @@ actor_ref &lt;- msg
 )
 sup.<span class="tok-fn">start</span>()</code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="pipelines">Pipelines</h2>
     <p>
       Vassiliadis (2007) identifies three ETL parallelism axes: data,
@@ -466,13 +474,16 @@ sup.<span class="tok-fn">start</span>()</code></pre>
       records.
     </div>
 
-    <!-- =================================================================== -->
     <h2 id="agents">Tools</h2>
     <p>
       In current frameworks tools are JSON Schemas described in docstrings
       and parsed at runtime, the source of an entire class of LLM bugs. In
       Yoru, <code>tool</code> is a keyword. The compiler generates the
-      schema, validates arguments, and tracks the tool's effects.
+      schema, validates arguments, and tracks the tool's effects. User
+      types in the input flow through to the schema: an <code>object</code>
+      becomes a nested <code>{type:"object",properties:...,required:...}</code>;
+      a tagged <code>enum</code> becomes <code>anyOf</code> with a
+      <code>kind</code> discriminator.
     </p>
 <pre><code><span class="tok-kw">tool</span> <span class="tok-type">SearchOrders</span> {
   <span class="tok-attr">description</span>: <span class="tok-str">"Search orders by customer email or order ID"</span>
@@ -525,6 +536,66 @@ sup.<span class="tok-fn">start</span>()</code></pre>
       returns <code>Err{kind: "agent_output_invalid"}</code>.
     </div>
 
+    <h3 id="tagged-tools">Tagged-union tool inputs</h3>
+    <p>
+      Declaring an <code>enum</code> with payload variants and using it as
+      a tool input produces an <code>anyOf</code> schema with a
+      <code>kind</code> discriminator. The runtime reconstructs each
+      element back into the right variant before <code>fn run</code>
+      observes it.
+    </p>
+<pre><code><span class="tok-kw">enum</span> <span class="tok-type">PatchOp</span> {
+  <span class="tok-type">Fuzzy</span>(old_text: <span class="tok-type">String</span>, new_text: <span class="tok-type">String</span>, count: <span class="tok-type">Int</span>),
+  <span class="tok-type">Insert</span>(line: <span class="tok-type">Int</span>, content: <span class="tok-type">String</span>),
+  <span class="tok-type">Delete</span>(start: <span class="tok-type">Int</span>, end: <span class="tok-type">Int</span>),
+}
+
+<span class="tok-kw">tool</span> <span class="tok-type">ApplyPatches</span> {
+  <span class="tok-attr">description</span>: <span class="tok-str">"Apply ordered patches to a file"</span>
+  <span class="tok-kw">input</span> {
+    path: <span class="tok-type">String</span>,
+    ops:  [<span class="tok-type">PatchOp</span>],
+  }
+  <span class="tok-attr">output</span>: <span class="tok-type">String</span>
+  <span class="tok-kw">fn</span> <span class="tok-fn">run</span>(self, i: <span class="tok-type">ApplyPatches.Input</span>) -&gt; <span class="tok-type">String</span> { ... }
+}</code></pre>
+    <p>
+      The model sends <code>{"path":"...","ops":[{"kind":"Fuzzy","old_text":"...","new_text":"...","count":0},{"kind":"Delete","start":5,"end":7}]}</code>.
+      Wrong or missing <code>kind</code>, unknown variant, or missing
+      payload fields surface as <code>Err{kind:"tool_invocation_failed"}</code>
+      with a precise message the agent can recover from.
+    </p>
+
+    <h3 id="self-minting">Self-minting agents</h3>
+    <p>
+      An agent can extend its own toolkit at runtime by emitting a Yoru
+      <code>tool { ... }</code> source string through a meta-tool that
+      wraps the <code>define_tool</code> builtin. The runtime parses,
+      registers, and exposes the new tool on the next LLM request (or the
+      next sibling <code>tool_use</code> block in the same response).
+    </p>
+<pre><code><span class="tok-kw">tool</span> <span class="tok-type">DefineTool</span> {
+  <span class="tok-attr">description</span>: <span class="tok-str">"Register a new Yoru tool for the rest of this session."</span>
+  <span class="tok-kw">input</span> { source: <span class="tok-type">String</span> <span class="tok-attr">@doc</span>(<span class="tok-str">"A Yoru `tool { ... }` declaration."</span>) }
+  <span class="tok-attr">output</span>: [<span class="tok-type">String</span>]
+  <span class="tok-kw">fn</span> <span class="tok-fn">run</span>(self, i: <span class="tok-type">DefineTool.Input</span>) -&gt; [<span class="tok-type">String</span>] {
+    <span class="tok-fn">define_tool</span>(i.source)
+  }
+}
+
+<span class="tok-kw">agent</span> <span class="tok-type">CuriousAgent</span> {
+  <span class="tok-attr">model</span>:  <span class="tok-str">"anthropic/claude-sonnet-4.5"</span>
+  <span class="tok-attr">system</span>: <span class="tok-str">"When you need a tool you do not have, mint it via DefineTool."</span>
+  <span class="tok-attr">tools</span>:  [<span class="tok-type">DefineTool</span>]
+}</code></pre>
+    <div class="callout is-info">
+      <div class="callout-title">Safety property worth keeping</div>
+      The model can declare requirements (effects, capabilities) on a
+      minted tool but cannot grant them. <code>with_capability(...)</code>
+      lives in host code; the runtime checks the capability stack at call
+      time regardless of how the tool was defined.
+    </div>
+
     <h3 id="mcp">MCP servers</h3>
     <p>
       An MCP server is declared at the module level. The compiler emits the
@@ -547,7 +618,6 @@ sup.<span class="tok-fn">start</span>()</code></pre>
 }</code></pre>
     <p>Build a standalone MCP server with <code>yoru build --target mcp src/order_server.yr</code>.</p>
 
-    <!-- =================================================================== -->
     <h2 id="services">HTTP services</h2>
     <p>
       <code>service</code> declares routes, middleware, and handlers. The
@@ -597,7 +667,116 @@ sup.<span class="tok-fn">start</span>()</code></pre>
   <span class="tok-kw">rpc</span> <span class="tok-fn">StreamUsers</span>(<span class="tok-type">Empty</span>) -&gt; <span class="tok-type">Stream</span>[<span class="tok-type">User</span>] <span class="tok-kw">effect</span> [<span class="tok-type">DB</span>]
 }</code></pre>
 
-    <!-- =================================================================== -->
+    <h2 id="stdlib">Standard library</h2>
+    <p>
+      Built-in providers installed on the interpreter by default. All errors
+      surface as <code>Result.Err{kind:"...prefix..."}</code>; successes are
+      unwrapped values.
+    </p>
+
+    <h3 id="stdlib-fs">FS and Path</h3>
+    <p>
+      Native filesystem operations, no shell-out. <code>FS.write</code> is
+      always atomic (tempfile + rename) and auto-creates parent dirs.
+      <code>FS.read</code> rejects binary content with
+      <code>fs_binary</code> instead of producing mangled UTF-8; use
+      <code>FS.read_bytes</code> for raw bytes.
+    </p>
+    <table>
+      <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>FS.read(path)</code></td><td>Text read. Errors on binary content.</td></tr>
+        <tr><td><code>FS.read_bytes(path)</code></td><td>Raw bytes.</td></tr>
+        <tr><td><code>FS.read_lines(path, offset, limit)</code></td><td>Paginated read; <code>limit=0</code> reads to EOF.</td></tr>
+        <tr><td><code>FS.write(path, content)</code></td><td>Atomic write.</td></tr>
+        <tr><td><code>FS.write_bytes(path, bytes)</code></td><td>Same with <code>Bytes</code>.</td></tr>
+        <tr><td><code>FS.write_with(path, content, opts)</code></td><td><code>{backup:Bool, no_overwrite:Bool}</code>.</td></tr>
+        <tr><td><code>FS.exists(path)</code> / <code>FS.is_binary(path)</code></td><td><code>Bool</code>.</td></tr>
+        <tr><td><code>FS.stat(path)</code></td><td><code>{name, size, is_dir, is_file, modified_unix}</code>.</td></tr>
+        <tr><td><code>FS.list(path)</code> / <code>FS.list_recursive(path, max_depth)</code></td><td>Directory entries.</td></tr>
+        <tr><td><code>FS.delete(path)</code> / <code>FS.mkdir(path)</code> / <code>FS.copy(src, dst)</code></td><td>Mutations.</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Path</h4>
+    <p>
+      Separate provider so non-IO code can compose paths without taking
+      the FS dependency. <code>Path.is_within</code> is the sandbox
+      primitive: it resolves both arguments through the longest existing
+      ancestor (handles cases where the child does not exist yet, e.g.
+      macOS <code>/tmp</code> as a symlink to <code>/private/tmp</code>),
+      then checks the relative path does not escape with <code>..</code>.
+    </p>
+    <table>
+      <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>Path.join(parts)</code></td><td>Compose a list of segments.</td></tr>
+        <tr><td><code>Path.resolve(path)</code></td><td>Absolute, symlinks resolved when target exists.</td></tr>
+        <tr><td><code>Path.dirname/basename/extname</code></td><td>Component extraction.</td></tr>
+        <tr><td><code>Path.is_within(child, parent)</code></td><td>Sandbox check returning <code>Bool</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h4 id="stdlib-fs-session">Read-before-edit tracker</h4>
+    <p>
+      <code>FS.with_session(fn)</code> opens a per-block tracker. Every
+      <code>FS.read</code> inside records the file's SHA-256 and mtime;
+      <code>FS.write_tracked</code> refuses to overwrite a path the
+      session has not observed or whose on-disk hash has drifted.
+    </p>
+<pre><code><span class="tok-type">FS</span>.<span class="tok-fn">with_session</span>(<span class="tok-kw">fn</span>() =&gt; {
+  <span class="tok-kw">let</span> original = <span class="tok-type">FS</span>.<span class="tok-fn">read</span>(<span class="tok-str">"/tmp/notes.txt"</span>)?
+  <span class="tok-kw">let</span> edited   = <span class="tok-fn">replace</span>(original, <span class="tok-str">"TODO"</span>, <span class="tok-str">"DONE"</span>)
+  <span class="tok-type">FS</span>.<span class="tok-fn">write_tracked</span>(<span class="tok-str">"/tmp/notes.txt"</span>, edited)
+})</code></pre>
+    <p>
+      Failure kinds, all recoverable: <code>fs_no_session</code> (write
+      outside the block), <code>fs_not_read</code> (path was never read),
+      <code>fs_stale_read</code> (file changed on disk since reading).
+    </p>
+
+    <h3 id="stdlib-text">Fuzzy and Diff</h3>
+    <p>
+      Two narrow providers shipping the algorithms most LLM agents need
+      for editing.
+    </p>
+
+    <h4><code>Fuzzy.find_replace</code></h4>
+    <p>
+      Four-level progressive matcher: <code>exact</code>,
+      <code>trim_trailing</code>, <code>trim_all</code>,
+      <code>unicode_normalized</code>. At <code>trim_all</code> and
+      above, the replacement is re-indented to match the haystack's
+      existing leading whitespace. Returns
+      <code>{result, match_level, replacements}</code> on hit, or
+      <code>Result.Err{kind:"fuzzy_no_match"}</code> on miss.
+    </p>
+<pre><code><span class="tok-kw">let</span> file = <span class="tok-str">"fn main() {\n    println(\"old\")\n}\n"</span>
+<span class="tok-kw">let</span> r = <span class="tok-type">Fuzzy</span>.<span class="tok-fn">find_replace</span>(file, <span class="tok-str">"println(\"old\")"</span>, <span class="tok-str">"println(\"NEW\")"</span>, <span class="tok-num">0</span>)</code></pre>
+    <p>
+      <code>r.match_level</code> is <code>"trim_all"</code> and the
+      replacement lands at the original four-space indent.
+    </p>
+
+    <h4><code>Diff.unified</code></h4>
+    <p>
+      Unified-diff renderer (git-compatible output). <code>Diff.unified(a, b)</code>
+      uses a default header path; <code>Diff.unified_named(a, b, path)</code>
+      sets the <code>a/&lt;path&gt;</code> / <code>b/&lt;path&gt;</code>
+      header explicitly. Empty string when <code>a == b</code>.
+    </p>
+
+    <h3 id="stdlib-builtins">Selected builtins added with the agent surface</h3>
+    <table>
+      <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>args()</code></td><td>List of CLI arguments after the script filename.</td></tr>
+        <tr><td><code>env(name)</code></td><td>Environment variable as <code>String</code>, or <code>nil</code> if unset.</td></tr>
+        <tr><td><code>replace_regex(s, pattern, replacement)</code></td><td>Regex find/replace. Invalid pattern returns <code>Err{kind:"regex_invalid"}</code>.</td></tr>
+        <tr><td><code>define_tool(source)</code></td><td>Parse a Yoru source string and register any tool / object / enum declarations. Returns registered names.</td></tr>
+      </tbody>
+    </table>
+
     <h2 id="spec">The specification, in one example</h2>
     <p>
       The following program is small enough to read top-to-bottom and
@@ -642,7 +821,6 @@ sup.<span class="tok-fn">start</span>()</code></pre>
   <span class="tok-type">Log</span>.<span class="tok-fn">info</span>(<span class="tok-str">"MCP server started"</span>, { port: <span class="tok-num">3000</span> })
 }</code></pre>
 
-    <!-- =================================================================== -->
     <h2 id="keywords">Keyword reference</h2>
     <table>
       <thead><tr><th>Keyword</th><th>Purpose</th></tr></thead>
@@ -679,7 +857,6 @@ sup.<span class="tok-fn">start</span>()</code></pre>
       </tbody>
     </table>
 
-    <!-- =================================================================== -->
     <h2 id="roadmap">Roadmap</h2>
     <table>
       <thead><tr><th>Phase</th><th>What</th><th>Target use</th></tr></thead>
@@ -707,7 +884,6 @@ sup.<span class="tok-fn">start</span>()</code></pre>
       </tbody>
     </table>
 
-    <!-- =================================================================== -->
     <h2 id="design-decisions">Design decisions, in brief</h2>
 
     <h3>Why no inheritance?</h3>
@@ -750,7 +926,6 @@ sup.<span class="tok-fn">start</span>()</code></pre>
 
   </main>
 
-  <!-- ==================== right-side overview (TOC) ==================== -->
   <aside class="toc-right" aria-label="On this page">
     <h4>On this page</h4>
     <ul>
@@ -770,8 +945,13 @@ sup.<span class="tok-fn">start</span>()</code></pre>
       <li><a href="#supervision">Supervision</a></li>
       <li><a href="#pipelines">Pipelines</a></li>
       <li><a href="#agents">Tools &amp; agents</a></li>
+      <li><a href="#tagged-tools">Tagged-union inputs</a></li>
+      <li><a href="#self-minting">Self-minting agents</a></li>
       <li><a href="#mcp">MCP</a></li>
       <li><a href="#services">Services</a></li>
+      <li><a href="#stdlib">Standard library</a></li>
+      <li><a href="#stdlib-fs">FS &amp; Path</a></li>
+      <li><a href="#stdlib-text">Fuzzy &amp; Diff</a></li>
       <li><a href="#spec">Full example</a></li>
       <li><a href="#keywords">Keywords</a></li>
       <li><a href="#operators">Operators</a></li>
